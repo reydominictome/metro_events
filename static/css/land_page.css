@@ -102,7 +102,7 @@ html{
 }
 #Metro_Events {
 	left: 31px;
-	top: 24px;
+	top: 30px;
 	position: absolute;
 	overflow: visible;
 	width: 174px;
@@ -113,6 +113,11 @@ html{
 	font-weight: lighter;
 	font-size: 30px;
 	color: rgba(255,255,255,1);
+	cursor: pointer;
+	transition: all 0.2s ease-in-out;
+	transform-origin: center;
+	--web-action-type: page;
+	--web-action-target: Home.html;
 }
 #Group_9 {
 	position: absolute;
@@ -160,11 +165,11 @@ html{
 	transform: matrix(1,0,0,1,0,0);
 }
 #search {
-	left: 29px;
-	top: 5px;
+	left: 40px;
+	top: 3px;
 	position: absolute;
 	overflow: visible;
-	width: 104px;
+	width: 512px;
 	white-space: nowrap;
 	text-align: left;
 	font-family: Poppins;
@@ -172,17 +177,24 @@ html{
 	font-weight: normal;
 	font-size: 25px;
 	color: rgba(163,163,163,1);
+	outline: none;
+}
+
+#search:focus{
+	color: rgba(0,0,0,0.7);
 }
 #Group_54 {
 	position: absolute;
 	width: 387.08px;
 	height: 38.91px;
 	left: 1746px;
-	top: 26.17px;
+	top: 30px;
 	overflow: visible;
 }
 #goto-help {
 	fill: rgba(255,255,255,1);
+	transition: all 0.2s ease-in-out;
+	transform-origin: center;
 }
 .goto-help {
 	overflow: visible;
@@ -192,6 +204,11 @@ html{
 	left: 348.17px;
 	top: 0px;
 	transform: matrix(1,0,0,1,0,0);
+	cursor: pointer;
+}
+#goto-help:hover{
+	transform: scale(1.05);
+	fill: #3B717A;
 }
 #goto-contact-us {
 	left: 160px;
@@ -206,6 +223,13 @@ html{
 	font-weight: normal;
 	font-size: 25px;
 	color: rgba(255,255,255,1);
+	cursor: pointer;
+	transition: all 0.2s ease-in-out;
+	transform-origin: center;
+}
+#goto-contact-us:hover{
+	transform: scale(1.05);
+	color: #BBF5FF
 }
 #goto-about-us {
 	left: 0px;
@@ -220,7 +244,15 @@ html{
 	font-weight: normal;
 	font-size: 25px;
 	color: rgba(255,255,255,1);
+	cursor: pointer;
+	transition: all 0.2s ease-in-out;
+	transform-origin: center;
 }
+#goto-about-us:hover{
+	transform: scale(1.05);
+	color: #BBF5FF
+}
+
 #Group_72 {
 	position: absolute;
 	width: 1810px;
@@ -785,7 +817,7 @@ html{
 	width: 222px;
 	height: 55px;
 	left: 119px;
-	top: 277px;
+	top: 280px;
 	overflow: visible;
 	transition: all 0.2s ease-in-out;
 }
@@ -1447,7 +1479,7 @@ html{
 	color: rgba(255,255,255,1);
 }
 #Connect_your_friends_and_the_w_du {
-	left: 0px;
+	left: 20px;
 	top: 88px;
 	position: absolute;
 	overflow: visible;
@@ -1465,7 +1497,7 @@ html{
 	width: 222px;
 	height: 55px;
 	left: 119px;
-	top: 277px;
+	top: 290px;
 	overflow: visible;
 	transition: all 0.2s ease-in-out;
 }

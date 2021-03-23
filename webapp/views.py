@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate, login, logout
 from .models import *
 
 # Create your views here.
+logged_user = {}
 
 def Mbox(title, text, style):
     sty=int(style)+4096
@@ -82,7 +83,8 @@ class MetroEventsIndexView(View):
                     auth = check_password(password,u.password)
 
                     if auth == True and u.username == username:
-                        return render(request, 'webapp/Home.html', {"logged_user":u})
+                        request.session['user'] = u.id
+                        return render(request, 'webapp/Home.html')
                         
                 messages.error(request,'username or password is incorrect')
                 return redirect('webapp:landing')
@@ -93,5 +95,5 @@ class MetroEventsIndexView(View):
 
 class MetroEventsHomeView(View):
     def get(self, request):
-        return render(request, 'webapp/Home.html')        
+        return render(request, 'webapp/movie_dashboard.html')        
 
