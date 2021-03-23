@@ -48,7 +48,7 @@ class Request(models.Model):
 		db_table = "request"
 
 class Organizer(models.Model):
-	organizer = models.ForeignKey(User, null = False, blank = False, on_delete = models.CASCADE)
+	organizer = models.ForeignKey(User, default = 1, null = False, blank = False, on_delete = models.CASCADE)
 	request = models.ManyToManyField(Request)
 
 	class Meta:

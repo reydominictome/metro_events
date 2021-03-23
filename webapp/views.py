@@ -44,29 +44,51 @@ def prepareAdminNotifications(request_type):
             user = User.objects.get(pk = a.admin.id)
             user.notification.add(notif.id)
 
-def requestNotification(request_id):
+def requestNotification(request_id, req_type):
     request = Request.objects.get(pk = request_id)
 
-    if request.isConfirmed == 1:
-        notif_title = "Request Acceptance"
-        notif_content = "Your request to be an administrator was accepted."
-        notif_type = "Administrator response"
+    if req_type == 'administrator':
+        if request.isConfirmed == 1:
+            notif_title = "Request Acceptance"
+            notif_content = "Your request to be an administrator was accepted."
+            notif_type = "Administrator response for administrator"
 
-        notif = Notification(notif_title = notif_title, notif_content = notif_content, notif_type = notif_type)
-        notif.save()
+            notif = Notification(notif_title = notif_title, notif_content = notif_content, notif_type = notif_type)
+            notif.save()
     
-        user = User.objects.get(pk = request.sender.id)
-        user.notification.add(notif.id)
-    elif request.isConfirmed == 0:
-        notif_title = "Request was Declined"
-        notif_content = "Your request to be an administrator was unfortunately declined."
-        notif_type = "Administrator response"
+            user = User.objects.get(pk = request.sender.id)
+            user.notification.add(notif.id)
+        elif request.isConfirmed == 0:
+            notif_title = "Request was Declined"
+            notif_content = "Your request to be an administrator was unfortunately declined."
+            notif_type = "Administrator response for administrator"
 
-        notif = Notification(notif_title = notif_title, notif_content = notif_content, notif_type = notif_type)
-        notif.save()
+            notif = Notification(notif_title = notif_title, notif_content = notif_content, notif_type = notif_type)
+            notif.save()
     
-        user = User.objects.get(pk = request.sender.id)
-        user.notification.add(notif.id)
+            user = User.objects.get(pk = request.sender.id)
+            user.notification.add(notif.id)
+    elif req_type == 'organizer':
+        if request.isConfirmed == 1:
+            notif_title = "Request Acceptance"
+            notif_content = "Your request to be an event organizer was accepted."
+            notif_type = "Administrator response for organizer"
+
+            notif = Notification(notif_title = notif_title, notif_content = notif_content, notif_type = notif_type)
+            notif.save()
+    
+            user = User.objects.get(pk = request.sender.id)
+            user.notification.add(notif.id)
+        elif request.isConfirmed == 0:
+            notif_title = "Request was Declined"
+            notif_content = "Your request to be an event organizer was unfortunately declined."
+            notif_type = "Administrator response for organizer"
+
+            notif = Notification(notif_title = notif_title, notif_content = notif_content, notif_type = notif_type)
+            notif.save()
+    
+            user = User.objects.get(pk = request.sender.id)
+            user.notification.add(notif.id)
 
 
 class MetroEventsIndexView(View):
@@ -238,14 +260,21 @@ class MetroEventsAdministratorView(View):
                     request = Request.objects.get(pk = request_id)
                     user = User.objects.get(pk = request.sender.id)
 
-                    admin = Administrator.objects.create()
-                    admin.save()
-                    admin_update = Administrator.objects.filter(id = admin.id).update(admin=user)
+                    if request.request_type == 'request_to_be_an_administrator':
+                        admin = Administrator.objects.create()
+                        admin.save()
+                        admin_update = Administrator.objects.filter(id = admin.id).update(admin=user)
+                        req_type = "administrator"
+                    elif request.request_type == 'request_to_be_an_organizer':
+                        organizer = Organizer.objects.create()
+                        organizer.save()
+                        organizer_update = Organizer.objects.filter(id = organizer.id).update(organizer=user)
+                        req_type = "organizer"
 
                     update = Request.objects.filter(id = request_id).update(isConfirmed=True)
                     update = Request.objects.filter(id = request_id).update(isPending=False)
 
-                    requestNotification(request_id)
+                    requestNotification(request_id, req_type)
 
                     return redirect('webapp:administrator')
                 elif 'btnDecline' in request.POST:
