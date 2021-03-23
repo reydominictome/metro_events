@@ -340,22 +340,22 @@
 		<div id="Request">
 			<span>Request</span>
 		</div>
-		<form>
+		<form action="" method="POST" enctype="multipart/form-data">
+			{% csrf_token %}
 			<div id="request_from">
 				<svg class="Rectangle_78">
 					<rect id="Rectangle_78" rx="7" ry="7" x="0" y="0" width="391" height="50">
 					</rect>
 				</svg>
-				<input  type="text" required id="From" name="request_from" placeholder="From">
+				<input type="number" required name="sender" value = "{{ request.session.user.id }}" hidden>
+				<input  type="text" required id="From" name="sender_username" placeholder="From" value = "{{ request.session.user.username }}" readonly>
 			</div>
 			<div id="request_to">
 				<svg class="Rectangle_78_c">
 					<rect id="Rectangle_78_c" rx="7" ry="7" x="0" y="0" width="450" height="50">
 					</rect>
 				</svg>
-			<select required id="Type_of_Request" name="type_of_request" placeholder="Type of Request">
-				<option value="none">Type of Request</option>
-				<option value="request_to_join_event">Request to join event</option>
+			<select required id="Type_of_Request" name="request_type" placeholder="Type of Request">
 				<option value="request_to_be_an_organizer">Request to be an organizer</option>
 				<option value="request_to_be_an_administrator">Request to be an administrator</option>
 			</select>
@@ -365,14 +365,14 @@
 					<rect id="Rectangle_78_df" rx="7" ry="7" x="0" y="0" width="589" height="338">
 					</rect>
 				</svg>
-				<textarea id="Compose_Mail" required name="request_description" placeholder="Compose Mail"></textarea>
+				<textarea id="Compose_Mail" required name="description" placeholder="Compose Mail"></textarea>
 			</div>
 			<div id="send_request">
 				<svg class="Rectangle_78_di">
 					<rect id="Rectangle_78_di" rx="7" ry="7" x="0" y="0" width="391" height="60">
 					</rect>
 				</svg>
-				<input type="submit" value="Send Request" id="Send">
+				<input type="submit" value="Send Request" id="Send" name="btnSendRequest">
 			</div>
 		</form>
 

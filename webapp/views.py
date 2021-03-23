@@ -18,6 +18,57 @@ def Mbox(title, text, style):
     sty=int(style)+4096
     return ctypes.windll.user32.MessageBoxW(0, title, text, sty)
 
+def prepareAdminNotifications(request_type):
+    admin = Administrator.objects.all()
+
+    if request_type == 'request_to_be_an_administrator':
+        notif_title = "Request to be an administrator"
+        notif_content = "A user requests to be an administrator."
+        notif_type = "Request"
+
+        notif = Notification(notif_title = notif_title, notif_content = notif_content, notif_type = notif_type)
+        notif.save()
+
+        for a in admin:
+            user = User.objects.get(pk = a.admin.id)
+            user.notification.add(notif.id)
+    elif request_type == 'request_to_be_an_organizer':
+        notif_title = "Request to be an organizer"
+        notif_content = "A user requests to be an organizer"
+        notif_type = "Request"
+
+        notif = Notification(notif_title = notif_title, notif_content = notif_content, notif_type = notif_type)
+        notif.save()
+
+        for a in admin:
+            user = User.objects.get(pk = a.admin.id)
+            user.notification.add(notif.id)
+
+def requestNotification(request_id):
+    request = Request.objects.get(pk = request_id)
+
+    if request.isConfirmed == 1:
+        notif_title = "Request Acceptance"
+        notif_content = "Your request to be an administrator was accepted."
+        notif_type = "Administrator response"
+
+        notif = Notification(notif_title = notif_title, notif_content = notif_content, notif_type = notif_type)
+        notif.save()
+    
+        user = User.objects.get(pk = request.sender.id)
+        user.notification.add(notif.id)
+    elif request.isConfirmed == 0:
+        notif_title = "Request was Declined"
+        notif_content = "Your request to be an administrator was unfortunately declined."
+        notif_type = "Administrator response"
+
+        notif = Notification(notif_title = notif_title, notif_content = notif_content, notif_type = notif_type)
+        notif.save()
+    
+        user = User.objects.get(pk = request.sender.id)
+        user.notification.add(notif.id)
+
+
 class MetroEventsIndexView(View):
     def get(self, request):
         return render(request, 'webapp/Users.html')
@@ -83,8 +134,31 @@ class MetroEventsIndexView(View):
                     auth = check_password(password,u.password)
 
                     if auth == True and u.username == username:
-                        request.session['user'] = u.id
-                        return render(request, 'webapp/Home.html')
+                        admin = Administrator.objects.all()
+                        isAdmin = 0
+                        organizer = Organizer.objects.all()
+                        isOrganizer = 0
+
+                        for a in admin:
+                            if u.id == a.admin:
+                                isAdmin = 1
+                        
+                        for o in organizer:
+                            if u.id == o.organizer:
+                                isOrganizer = 1
+
+                        context = {
+                            'id': u.id,
+                            'first_name': u.first_name,
+                            'middle_name': u.middle_name,
+                            'last_name': u.last_name,
+                            'username': u.username,
+                            'email': u.email,
+                            'isAdmin': isAdmin,
+                            'isOrganizer': isOrganizer
+                        }
+                        request.session['user'] = context
+                        return redirect('webapp:home')
                         
                 messages.error(request,'username or password is incorrect')
                 return redirect('webapp:landing')
@@ -95,5 +169,98 @@ class MetroEventsIndexView(View):
 
 class MetroEventsHomeView(View):
     def get(self, request):
-        return render(request, 'webapp/movie_dashboard.html')        
+        return render(request, 'webapp/Home.html')
 
+    def post(self, request):
+        if request.session.has_key('user'):
+            if request.method == 'POST':
+                if 'btnSendRequest' in request.POST:
+                    form = RequestForm(request.POST)
+                    data = request.POST
+
+                    request_type = data.get("request_type")
+                    description = data.get("description")
+                    sender = data.get("sender")
+                    sender = User.objects.get(pk = sender)
+                    
+                    requests = Request.objects.filter(sender = sender)
+                    count = 0
+
+                    for r in requests:
+                        if r.sender == sender:
+                            if r.isDeleted == 0:
+                                if r.request_type == request_type:
+                                    count = 1
+                    if count == 0: 
+                        form = Request(description = description, request_type = request_type, sender = sender)
+                        form.save()
+
+                        prepareAdminNotifications(request_type)
+                        print("eut")
+                        return redirect('webapp:home')
+
+                    print("redundant req")
+                    return redirect('webapp:landing')
+                print("btnRequest can't be found")
+                return redirect('webapp:landing')
+            print("No post")
+            return redirect('webapp:landing')
+        print("No session")
+        return redirect('webapp:landing')
+
+class MetroEventsEventsView(View):
+    def get(self, request):
+        return render(request, 'webapp/Home.html')
+
+class MetroEventsAdministratorView(View):
+    def get(self, request):
+        if request.session.has_key('user'):
+            requests = Request.objects.all()
+            events = Event.objects.all()
+            users = User.objects.all()
+
+            return render(request, 'webapp/movie_dashboard.html', {"users":users, "requests":requests, "events":events})
+
+        return redirect('webapp:landing')
+
+    def post(self, request):
+        if request.session.has_key('user'):
+            if request.method == 'POST':
+                if 'btnDelete' in request.POST:
+                    request_id = request.POST.get("request_id")
+
+                    update = Request.objects.filter(id = request_id).update(isDeleted=True)
+
+                    return redirect('webapp:administrator')
+                elif 'btnAccept' in request.POST:
+                    request_id = request.POST.get("request_id")
+
+                    request = Request.objects.get(pk = request_id)
+                    user = User.objects.get(pk = request.sender.id)
+
+                    admin = Administrator.objects.create()
+                    admin.save()
+                    admin_update = Administrator.objects.filter(id = admin.id).update(admin=user)
+
+                    update = Request.objects.filter(id = request_id).update(isConfirmed=True)
+                    update = Request.objects.filter(id = request_id).update(isPending=False)
+
+                    requestNotification(request_id)
+
+                    return redirect('webapp:administrator')
+                elif 'btnDecline' in request.POST:
+                    request_id = request.POST.get("request_id")
+
+                    update = Request.objects.filter(id = request_id).update(isPending=False)
+
+                    requestNotification(request_id)
+
+                    return redirect('webapp:administrator')
+                return redirect('webapp:landing')
+            return redirect('webapp:landing')
+        return redirect('webapp:landing')
+
+
+class MetroEventsOrganizerView(View):
+    def get(self, request):
+        return render(request, 'webapp/Home.html')                

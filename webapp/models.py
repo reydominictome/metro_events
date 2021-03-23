@@ -25,7 +25,7 @@ class User(models.Model):
 	middle_name = models.CharField(max_length=50)
 	last_name = models.CharField(max_length=50)
 	username = models.CharField(max_length=50)
-	password = models.CharField(max_length=50)
+	password = models.CharField(max_length=255)
 	email = models.CharField(max_length=50)
 	register_date = models.DateField(default = datetime.now)
 	status = models.BooleanField(default = True)
@@ -37,10 +37,11 @@ class User(models.Model):
 class Request(models.Model):
 	description = models.CharField(max_length=255)
 	date_sent = models.DateField(default = datetime.now)
-	time_Sent = models.TimeField(default = timezone.now)
+	time_sent = models.TimeField(default = timezone.now)
 	request_type = models.CharField(max_length=50)
 	isPending = models.BooleanField(default = True)
 	isConfirmed = models.BooleanField(default = False)
+	isDeleted = models.BooleanField(default = False)
 	sender = models.ForeignKey(User, null = False, default = 1, blank = False, on_delete = models.CASCADE)
 
 	class Meta:
@@ -73,9 +74,7 @@ class Event(models.Model):
 		db_table = "event"
 
 class Administrator(models.Model):
-	admin = models.ForeignKey(User, null = False, blank = False, on_delete = models.CASCADE)
-	request = models.ManyToManyField(Request)
+	admin = models.ForeignKey(User, default = 1, null = False, blank = False, on_delete = models.CASCADE)
 
 	class Meta:
 		db_table = "administrator"
-

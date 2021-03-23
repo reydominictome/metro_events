@@ -14,3 +14,9 @@ class RequestForm(forms.ModelForm):
 	class Meta:
 		model = Request
 		fields = ('description','request_type')
+
+class AdministratorForm(forms.ModelForm):
+
+        class Meta:
+                model = Administrator
+                fields = ('admin',)
