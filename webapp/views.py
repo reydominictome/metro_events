@@ -90,9 +90,25 @@ def requestNotification(request_id, req_type):
             user = User.objects.get(pk = request.sender.id)
             user.notification.add(notif.id)
 
+def newEventNotification(event_id):
+    event = Event.objects.get(pk = event_id)
+    user = User.objects.all()
+
+    notif_title =  event.event_name
+    notif_content = "A new event has been created. If you are interested go and check it out."
+    notif_type = "New Event Announcement"
+
+    notif = Notification(notif_title = notif_title, notif_content = notif_content, notif_type = notif_type)
+    notif.save()
+
+    for u in user:
+        u.notification.add(notif.id)
+
 
 class MetroEventsIndexView(View):
     def get(self, request):
+        #if request.session.has_key('user'):
+        #    del request.session['user']
         return render(request, 'webapp/Users.html')
     
     def post(self, request):
@@ -177,8 +193,9 @@ class MetroEventsIndexView(View):
                             'username': u.username,
                             'email': u.email,
                             'isAdmin': isAdmin,
-                            'isOrganizer': isOrganizer
+                            'isOrganizer': isOrganizer,
                         }
+
                         request.session['user'] = context
                         return redirect('webapp:home')
                         
@@ -191,7 +208,28 @@ class MetroEventsIndexView(View):
 
 class MetroEventsHomeView(View):
     def get(self, request):
-        return render(request, 'webapp/Home.html')
+        if request.session.has_key('user'):
+            user_id = value = int(request.session['user']['id'])
+            user = User.objects.get(pk = user_id)
+
+            notifs = user.notification.all()
+            notifs_titles = []
+            notifs_dates = []
+            notifs_contents = []
+            notifs_types = []
+
+            for n in notifs:
+                notifs_titles.append(n.notif_title)
+                notifs_dates.append(n.notif_date)
+                notifs_contents.append(n.notif_content)
+                notifs_types.append(n.notif_type)
+
+            return render(request, 'webapp/Home.html', {"notifs_titles":notifs_titles,
+                                                        "notifs_dates":notifs_dates, 
+                                                        "notifs_contents":notifs_contents,
+                                                        "notifs_types": notifs_types})
+
+        return redirect('webapp:landing')
 
     def post(self, request):
         if request.session.has_key('user'):
@@ -211,14 +249,15 @@ class MetroEventsHomeView(View):
                     for r in requests:
                         if r.sender == sender:
                             if r.isDeleted == 0:
-                                if r.request_type == request_type:
-                                    count = 1
+                                if r.isPending == 1:
+                                    if r.isConfirmed == 1:
+                                        if r.request_type == request_type:
+                                            count = 1
                     if count == 0: 
                         form = Request(description = description, request_type = request_type, sender = sender)
                         form.save()
 
                         prepareAdminNotifications(request_type)
-                        print("eut")
                         return redirect('webapp:home')
 
                     print("redundant req")
@@ -232,7 +271,67 @@ class MetroEventsHomeView(View):
 
 class MetroEventsEventsView(View):
     def get(self, request):
-        return render(request, 'webapp/Home.html')
+        if request.session.has_key('user'):
+            events = Event.objects.all()
+
+            #for e in events:
+            #    print(e.event_organizer.organizer.username)
+
+
+            return render(request, 'webapp/event.html', {'events': events})
+        return redirect('webapp/landing')
+
+    def post(self, request):
+        if request.session.has_key('user'):
+            if request.method == 'POST':
+                if 'btnDelete' in request.POST:
+                    form = EventCreationForm(request.POST)
+        return redirect('webapp/landing')
+
+class MetroEventsEventsRegistrationView(View):
+    def get(self, request):
+        if request.session.has_key('user'):
+
+            return render(request, 'webapp/event_registration.html')
+        return redirect('webapp/landing')
+    
+    def post(self, request):
+        if request.session.has_key('user'):
+            if request.method == 'POST':
+                if 'btnCreate' in request.POST:
+                    form = EventCreationForm(request.POST)
+                    data = request.POST
+
+                    if form.is_valid():
+                        organizer = data.get("organizer")
+                        event_name = data.get("event_name")
+                        event_description = data.get("event_description")
+                        event_type = data.get("event_type")
+                        event_fee = data.get("event_fee")
+                        start_date = data.get("start_date")
+                        end_date = data.get("end_date")
+                        start_time = data.get("start_time")
+                        end_time = data.get("end_time")
+
+                        user = User.objects.get(pk = organizer)
+                        event_organizer = Organizer.objects.get(organizer = user)
+                        form = Event(event_name = event_name,
+                                    event_description = event_description,
+                                    event_type = event_type,
+                                    event_fee = event_fee,
+                                    start_date = start_date,
+                                    end_date = end_date, 
+                                    start_time = start_time,
+                                    end_time = end_time)
+                        form.save()
+                        event_update = Event.objects.filter(id = form.id).update(event_organizer=event_organizer)
+
+                        event_id = Event.objects.get(pk = form.id).pk
+
+                        newEventNotification(event_id)
+
+                        return redirect('webapp:home')
+        return redirect('webapp:landing')
 
 class MetroEventsAdministratorView(View):
     def get(self, request):

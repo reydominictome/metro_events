@@ -1,0 +1,241 @@
+<!DOCTYPE html> 
+<html lang="en">
+	<head>
+		{% load static %}
+		<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700">
+		<title>Registration</title>
+		
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+		<!--<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>-->
+		<link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css">
+		<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
+		<link href="{% static 'css/CustomerStyles.css' %}" rel="stylesheet" type="text/css">
+	</head>
+
+	<body class="body-color">
+		<nav class="navbar navbar-dark bg-dark">
+			<a class="navbar-brand" href="/main">
+		    <img src="{% static 'images/icon.png' %}" width="40" height="30" class="d-inline-block align-top" alt="" loading="lazy">
+		    Movie House Automate
+		  </a>
+		</nav>
+		<div class="registration-body-left">
+			<div class="back-button">
+				<a type="submit" href="/movie/index" class="btn btn-success btn-lg">To Report Summary</a>
+			</div>
+			<div class="signup-form">
+				<form action="" method="POST" enctype="multipart/form-data">
+					{% csrf_token %}
+					<h2>Register DVD</h2>
+					<input id="fname" type="text" class="form-control" name="organizer" value = "{{ request.session.user.id }}" 
+					placeholder="" required="required">
+			        <table class="a">
+						<tr>
+			        		<td>Event Name:</td>
+							<td><div class="form-group"><input id="fname" type="text" class="form-control" 
+								name="event_name" placeholder="" required="required"></div></td>
+			        	</tr>
+						<tr>
+			        		<td>Event Description:</td>
+							<td><div class="form-group"><textarea id="Compose_Mail" required name="event_description"
+								 placeholder="Description"></textarea></div></td>
+			        	</tr>
+						<tr>
+			        		<td>Event Type:</td>
+							<td><div class="form-group">
+								<select id="gender" name="event_type" class="a" name="gender">
+								<option value = "Sports">Sports</option>
+								<option value = "Recreation">Recreation</option>
+								<option value = "Fun Run">Fun Run</option>
+								<option value = "Live Concert">Live Concert</option>
+								<option value = "Dance">Dance</option>
+								<option value = "Theatre">Theatre</option>
+							</select></div></td>
+			        	</tr>
+						<tr>
+			        		<td>Event Fee:</td>
+							<td><div class="form-group"><input id="email" type="number" step="0.01" min="0" 
+								pattern="[\d*]" max="200" class="form-control" 
+								name="event_fee" placeholder="0.00" required="required"></div></td>
+			        	</tr>
+						<tr>
+			        		<td>Start Date:</td>
+							<td><div class="form-group"><input id="username" type="date" class="form-control" 
+								name="start_date" placeholder="" required="required"></div></td>
+			        	</tr>
+						<tr>
+			        		<td>Start Time:</td>
+							<td><div class="form-group"><input id="password" type="time" class="form-control" 
+								name="start_time" placeholder="" required="required"></div></td>
+			        	</tr>
+						<tr>
+			        		<td>End Date:</td>
+							<td><div class="form-group"><input id="username" type="date" class="form-control" 
+								name="end_date" placeholder="" required="required"></div></td>
+			        	</tr>
+						<tr>
+			        		<td>End Time:</td>
+							<td><div class="form-group"><input id="password" type="time" class="form-control" 
+								name="end_time" placeholder="" required="required"></div></td>
+			        	</tr>
+			        </table>
+
+					<div class="form-group">
+			            <button id="btnRegister" name="btnCreate" type="submit" class="btn btn-success btn-lg btn-block">Register DVD</button>
+			        </div>
+			    </form>
+			</div>
+		</div>
+
+		<div class="modal" id="img-alert" role="dialog">
+			<div class="modal-dialog">
+	  
+			  <!--MODAL CONTENT-->
+			  <div class="modal-content">
+				<div class="modal-header">
+				  <h4 class="modal-title">Notification</h4>
+				  <button type="button" class="close" data-dismiss="modal">&times;</button>
+				</div>
+				<div class="modal-body" style="overflow-y:hidden;">
+				  <p>
+					Please input an image. (JPG, JPEG, PNG)
+				  </p>
+				</div>
+				<div class="modal-footer">
+				  <button type="button" class="btn btn-success btn-sm" data-dismiss="modal">Confirm</button>
+				</div>
+			  </div>
+	  
+			</div>
+		  </div>
+	</body>
+
+	<script src="{% static 'js/jquery-3.5.1.min.js' %}"></script>
+	<!-- <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script> -->
+	<script src="{% static 'js/bootstrap.min.js' %}"></script>
+
+	<script type='text/javascript'>
+		var casts = [];
+		var returnword;
+
+		function preview_image(event) 
+		{
+			var fileName = document.getElementById('fileName').value;
+			var idxDot = fileName.lastIndexOf('.') + 1;
+			var extFile = fileName.substr(idxDot, fileName.length).toLowerCase();
+			if (extFile=='jpg' || extFile=='jpeg' || extFile=='png'){
+				{
+				var reader = new FileReader();
+				reader.onload = function()
+				{
+					var output = document.getElementById('output_image');
+					output.src = reader.result;
+				}
+				reader.readAsDataURL(event.target.files[0]);
+				}
+			}else{
+				$('#img-alert').modal('show');
+				document.getElementById('fileName').value = '';
+				document.getElementById('output_image').value = '';
+				document.getElementById('output_image').src = "{% static 'images/default-dvd.png' %}";
+			}   
+		}
+
+		function addToList()  
+		{
+			var returnword = document.getElementById('cast').value;
+			var currVal = document.getElementById('casts').value;
+			casts.push(returnword);
+			$('#casts').val(casts.join(', '));
+			$('#cast').val('');
+			document.getElementById('cast').value = "";
+
+			$('#cast_list').empty();
+			for (var i = 0; i < casts.length; ++i) {
+			$('#cast_list').append('<li class="list-group-item list-group-item-light" data-value="' + casts[i] + '">' + casts[i] + ' <button class="btn btn-danger float-right p-0 m-0 cast-delete">X</button></li>');
+			}
+			$(document).on('click', '.cast-delete', function (e) {
+				var val = $(this).parent().data('value');
+				casts = jQuery.grep(casts, function(value) {
+				return value != val;
+				});
+				$('#casts').val(casts.join(', '));
+				$(this).parent().remove();
+				if (casts.length === 0) {
+					var message = '<li class="list-group-item list-group-item-light">No Cast(s)</li>';
+          			document.getElementById('cast_list').innerHTML = message;
+				}
+			});
+		}
+
+		$(document).ready(function () {
+			var currDate = new Date();
+			var day = ("0" + currDate.getDate()).slice(-2);
+			var month = ("0" + (currDate.getMonth() + 1)).slice(-2);
+			var today = currDate.getFullYear()+"-"+(month)+"-"+(day) ;
+			document.getElementById('date_registered').value = today;
+			document.getElementById('sku').value = +currDate;  
+		})
+
+		// Get the button that opens the modal
+		var btn = document.querySelectorAll("button.modal-button");
+
+		// All page modals
+		var modals = document.querySelectorAll('.modal');
+
+		// Get the <span> element that closes the modal
+		var spans = document.getElementsByClassName("close");
+
+		// Get the cancel buttons that closes the modal
+		var btnCancel = document.getElementsByClassName("cancel");
+
+		// When the user clicks the button, open the modal
+		for (var i = 0; i < btn.length; i++) {
+		btn[i].onclick = function(e) {
+			e.preventDefault();
+			modal = document.querySelector(e.target.getAttribute("href"));
+			modal.style.display = "block";
+			}
+		}
+
+		// When the user clicks on cancel button, close the modal
+		for (var i = 0; i < btnCancel.length; i++) {
+		btnCancel[i].onclick = function() {
+			for (var index in modals) {
+			if (typeof modals[index].style !== 'undefined') modals[index].style.display = "none";    
+			}
+			}
+		}
+
+		// When the user clicks on <span> (x), close the modal
+		for (var i = 0; i < spans.length; i++) {
+		spans[i].onclick = function() {
+			for (var index in modals) {
+			if (typeof modals[index].style !== 'undefined') modals[index].style.display = "none";    
+				}
+			}
+		}
+
+		// When the user clicks anywhere outside of the modal, close it
+		window.onclick = function(event) {
+			if (event.target.classList.contains('modal')) {
+			for (var index in modals) {
+			if (typeof modals[index].style !== 'undefined') modals[index].style.display = "none";    
+				}
+			}
+		}
+	</script>
+
+	{% if messages %}
+	<script>
+	$(document).ready(function(){
+		$("#message").modal('show');
+	});
+	</script>
+	{% endif %}
+</html>
+
+<!--Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>-->

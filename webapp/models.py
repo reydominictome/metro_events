@@ -67,6 +67,9 @@ class Event(models.Model):
 	end_date = models.DateField(default = datetime.now)
 	start_time = models.TimeField(default = timezone.now)
 	end_time = models.TimeField(default = timezone.now)
+	isCanceled = models.BooleanField(default = False)
+	isDeleted = models.BooleanField(default = False)
+	isFinished = models.BooleanField(default = False)
 	reviews = models.ManyToManyField(Review)
 	participants = models.ManyToManyField(User)
 
