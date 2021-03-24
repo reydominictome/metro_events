@@ -77,15 +77,15 @@ class EventRequest(models.Model):
 	isConfirmed = models.BooleanField(default = False)
 	isDeleted = models.BooleanField(default = False)
 	sender = models.ForeignKey(User, null = False, default = 1, blank = False, on_delete = models.CASCADE)
-	event = models.ForeignKey(Event, null = False, default = 1, blank = False, on_delete = models.CASCADE)
+	event = models.ForeignKey(Event, null = False, default = 1, blank = False, on_delete = models.CASCADE, related_name="event_requests")
 
 	class Meta:
 		db_table = "event_request"
 
 class Organizer(models.Model):
-	organizer = models.ForeignKey(User, default = 1, null = False, blank = False, on_delete = models.CASCADE)
+	organizer = models.ForeignKey(User, default = 1, null = False, blank = False, on_delete = models.CASCADE, related_name = 'user_organizer')
 	request = models.ManyToManyField(EventRequest)
-	events = models.ManyToManyField(Event)
+	events = models.ManyToManyField(Event, related_name = "organizer")
 
 	class Meta:
 		db_table="organizer"

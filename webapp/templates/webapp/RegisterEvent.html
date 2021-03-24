@@ -508,11 +508,11 @@
 			</div>
 		</div>	
 
-	{% for req in requests %}
-    {% if req.isDeleted == 0 %}
+	{% for e in organizer.events.all %}
+    {% if e.isDeleted == 0 %}
 	
 		<div id="see_description">
-			<div id="view{{ req.id }}" class="modal">
+			<div id="view{{ e.id }}" class="modal">
 			<div id="Group_81">
 				<svg class="Rectangle_125">
 					<rect id="Rectangle_125" rx="5" ry="5" x="0" y="0" width="1330" height="673">
@@ -524,21 +524,24 @@
 				</svg>
 			</div>
 			<div id="Rey_Dominic_Tome">
-				<span>{{ req.sender.username }}</span>
+				<span>{% for org in e.organizer.all %}
+						{{ org.organizer.username }}
+					  {% endfor %}
+				</span>
 			</div>
 			<div id="-_Requesting_to_be_an_Administ">
-				<span>- {% if req.request_type == 'request_to_be_an_administrator' %}
-					Requesting to be an Administrator
-				  {% endif %}
-				  {% if req.request_type == 'request_to_be_an_organizer' %}
-					Requesting to be an Organizer
-				  {% endif %}</span>
+				<span>- {{ e.event_type }}</span>
 			</div>
 			<div id="March_22_2021_1230_am">
-				<span>{{ req.date_sent | date:"F d, Y" }}, {{ req.time_sent }}</span>
+				<span>{{ e.start_date | date:"F d, Y" }}, {{ e.start_time }}</span>
 			</div>
 			<div id="May_I_request_to_choochooo_in_">
-				<span>{{ req.description }}</span>
+				<span>Description: {{ e.event_description }}<br>
+					Start Date: {{ e.start_date | date:"F d, Y" }}<br>
+					End Date: {{ e.end_date }}<br>
+					Start Time: {{ e.start_time }}<br>
+					End Time: {{ e.end_time }}<br>
+				</span>
 			</div>
 			<form id="updateForm" method="POST" enctype="multipart/form-data">
 				{% csrf_token %}
@@ -547,10 +550,13 @@
 						<rect id="Rectangle_128" rx="30" ry="30" x="0" y="0" width="247" height="60">
 						</rect>
 					</svg>
-					<input type="text" name="request_id" value = "{{ req.id }}" hidden>
-					<input type="submit" value="Accept" id="request-accepted" name = "btnAccept">
+					<input type="text" name="user_id" value = "{{ request.session.user.id }}" hidden>
+					<input type="text" name="event_id" value = "{{ e.id }}" hidden>
+					<input type="submit" value="Join" id="request-accepted" name = "btnJoin">
 				</div>
 			</form>
+			{% for participants in e.participants.all %}
+			{% if participants.user.id == request.session.user.id %}
 			<form id="updateForm" method="POST" enctype="multipart/form-data">
 				{% csrf_token %}
 				<div id="request-denied">
@@ -558,10 +564,12 @@
 						<rect id="Rectangle_127" rx="30" ry="30" x="0" y="0" width="247" height="60">
 						</rect>
 					</svg>
-					<input type="text" name="request_id" value = "{{ req.id }}" hidden>
-					<input type="submit" value="Decline" id="Denied" name = "btnDecline">
+					<input type="text" name="event_id" value = "{{ e.id }}" hidden>
+					<input type="submit" value="Review" id="Denied" name = "btnReview">
 				</div>
 			</form>
+			{% endif %}
+			{% endfor %}
 			<div id="reply">
 				<svg class="Polygon_2" viewBox="0 0 51.962 50.856">
 					<path id="Polygon_2" d="M 25.98080444335938 0 L 51.96161270141602 50.85604858398438 L 0 50.85604858398438 Z">
@@ -685,56 +693,76 @@
           style="width:100%;">
               <thead>
                 <tr>
-					<th data-sortable="true">Date Registered</th>
-					<th data-sortable="false">Time Sent</th>
-					<th data-sortable="true">Description</th>
-					<th data-sortable="true">Username</th>
-					<th data-sortable="true">Request Type</th>
-					<th data-sortable="true">Status</th>
-					<th data-sortable="false"></th>
+					<th data-sortable="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                  	<th data-sortable="false">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
                 </tr>
               </thead>
+			  <form action="" method="POST" enctype="multipart/form-data">
+				{% csrf_token %}
             <tbody>
-			  {% for req in requests %}
-              {% if req.isDeleted == 0 %}
               <tr>
-                <td>{{ req.date_sent | date:"F d, Y" }}</td>
-                <td>{{ req.time_sent }}</td>
-                <td>{{ req.description }}</td>
-                <td>{{ req.sender.username }}</td>
-                <td>{% if req.request_type == 'request_to_be_an_administrator' %}
-					Administrator
-				  {% endif %}
-				  {% if req.request_type == 'request_to_be_an_organizer' %}
-					Organizer
-				  {% endif %}
-			    </td>
-                <td>{% if req.isPending == 1 %}
-					Pending
-				  {% endif %}
-				  {% if req.isPending == 0 %}
-					{% if req.isConfirmed == 1 %}
-					  Request Accepted
-					{% endif %}
-					{% if req.isConfirmed == 0 %}
-					  Request Denied
-					{% endif %}
-				  {% endif %}
-			    </td>
-                <td>
-                  <button  href="#view{{ req.id }}" id="view_desc" class=" view_desc btn btn-info btn-sm modal-button">View</button>
-                  <form action="" method="POST" enctype="multipart/form-data">
-					{% csrf_token %}
-					<input type="number" name="request_id" value = "{{ req.id }}" hidden>
-                    <input type="submit" id="trash_info" name="btnDelete" class="btn btn-danger btn-sm btn-delete modal-button" value="Trash">
-                </form>
-                </td>
+                <td><input type="number" required name="organizer" value = "{{ request.session.user.id }}" hidden></td>
               </tr>
-              {% endif %}
-              {% endfor %}
+			  <tr>
+				  <td>Event Name:</td>
+				  <td><input type="text" required name="event_name" required></td>
+			  </tr>
+			  <tr>
+				  <td>Event Description:</td>
+				  <td><textarea id="Compose_Mail" required name="event_description"
+					placeholder="Description"></textarea></td>
+			  </tr>
+			  <tr>
+				  <td>Event Type:</td>
+				  <td><select id="gender" name="event_type" class="a" name="gender">
+					<option value = "Sports">Sports</option>
+					<option value = "Recreation">Recreation</option>
+					<option value = "Fun Run">Fun Run</option>
+					<option value = "Live Concert">Live Concert</option>
+					<option value = "Dance">Dance</option>
+					<option value = "Theatre">Theatre</option>
+				</select></td>
+			  </tr>
+			  <tr>
+				  <td>Event Fee:</td>
+				  <td><input id="email" type="number" step="0.01" min="0" 
+					pattern="[\d*]" max="200" class="form-control" 
+					name="event_fee" placeholder="0.00" required="required"></td>
+			  </tr>
+			  <tr>
+				<td>Start Date:</td>
+				<td><input id="username" type="date" class="form-control" 
+					name="start_date" placeholder="" required="required"></td>
+			  </tr>
+			  <tr>
+				<td>Start Time:</td>
+				<td><input id="password" type="time" class="form-control" 
+					name="start_time" placeholder="" required="required"></td>
+			  </tr>
+			  <tr>
+				<td>End Date:</td>
+				<td><input id="username" type="date" class="form-control" 
+					name="end_date" placeholder="" required="required"></td>
+			  </tr>
+			  <tr>
+				<td>End Time:</td>
+				<td><input id="password" type="time" class="form-control" 
+					name="end_time" placeholder="" required="required"></td>
+			  </tr>
+			  <tr>
+				<td></td>
+				<td><button id="btnRegister" name="btnCreate" type="submit" 
+					class="btn btn-success btn-lg btn-block">Create Event</button></td>
+			  </tr>
             </tbody>
+			</form>
           </table>
 	</div>
+
+	<!--<td>
+		<button  href="#view{{ e.id }}" id="view_desc" class=" view_desc btn btn-info btn-sm modal-button">View</button>
+		<button  id="trash_info" class="btn btn-success btn-sm btn-delete modal-button">Upvote</button>
+	  </td>-->
 
 	<div id="filter">
 		<svg class="Rectangle_121">
@@ -778,11 +806,12 @@
 				</path>
 			</svg>
 			</a>
-			
-			<a href = "/webapp/notifications"><svg class="goto-notif" viewBox="5.625 3.375 39.839 47.083">
+			<a href = "/webapp/notifications">
+			<svg class="goto-notif" viewBox="5.625 3.375 39.839 47.083">
 				<path id="goto-notif" d="M 25.54474067687988 50.4580192565918 C 28.12287521362305 50.4580192565918 30.23164939880371 48.33939743041992 30.23164939880371 45.74972152709961 L 20.85771560668945 45.74972152709961 C 20.85771560668945 48.33939743041992 22.96660423278809 50.4580192565918 25.54474067687988 50.4580192565918 Z M 40.77756500244141 36.33311462402344 L 40.77756500244141 23.38528442382813 C 40.77756500244141 16.20512390136719 35.73923110961914 10.08455562591553 29.06000709533691 8.554018020629883 L 29.06000709533691 6.90622615814209 C 29.06000709533691 4.904972076416016 27.53693962097168 3.375000238418579 25.54474067687988 3.375000238418579 C 23.55253982543945 3.375000238418579 22.02947235107422 4.904972076416016 22.02947235107422 6.90622615814209 L 22.02947235107422 8.554018974304199 C 15.35013389587402 10.08455562591553 10.31191062927246 16.20512390136719 10.31191062927246 23.38528442382813 L 10.31191062927246 36.33311080932617 L 5.625000476837158 41.04141616821289 L 5.625000476837158 43.39556503295898 L 45.4644775390625 43.39556503295898 L 45.4644775390625 41.04141616821289 L 40.77756500244141 36.33311462402344 Z">
 				</path>
-			</svg></a>
+			</svg>
+			</a>
 			<a href = "/webapp/home">
 			<svg class="goto-profile" viewBox="0 0.563 43.632 43.632">
 				<path id="goto-profile" d="M 21.81597900390625 0.5625 C 9.764410018920898 0.5625 0 10.3269100189209 0 22.37847900390625 C 0 34.43004608154297 9.764410018920898 44.19445419311523 21.81597900390625 44.19445419311523 C 33.86754608154297 44.19445419311523 43.6319580078125 34.43004608154297 43.6319580078125 22.37847900390625 C 43.6319580078125 10.3269100189209 33.86754608154297 0.5625 21.81597900390625 0.5625 Z M 21.81597900390625 9.007394790649414 C 26.09120559692383 9.007394790649414 29.55713272094727 12.47332000732422 29.55713272094727 16.74854850769043 C 29.55713272094727 21.02377510070801 26.09120559692383 24.48970222473145 21.81597900390625 24.48970222473145 C 17.54075050354004 24.48970222473145 14.07482433319092 21.02377510070801 14.07482433319092 16.74854850769043 C 14.07482433319092 12.47332191467285 17.54075050354004 9.007394790649414 21.81597900390625 9.007394790649414 Z M 21.81597900390625 39.26826477050781 C 16.65227699279785 39.26826477050781 12.02517890930176 36.92832946777344 8.928716659545898 33.26887130737305 C 10.5825080871582 30.15481758117676 13.81971836090088 28.00840759277344 17.59353065490723 28.00840759277344 C 17.80465316772461 28.00840759277344 18.01577568054199 28.0435962677002 18.21810150146484 28.10517120361328 C 19.36168098449707 28.47463607788086 20.55804061889648 28.71215057373047 21.81597900390625 28.71215057373047 C 23.07391548156738 28.71215057373047 24.27907180786133 28.47463607788086 25.41385650634766 28.10517120361328 C 25.61618232727051 28.04359436035156 25.82730484008789 28.00840759277344 26.03842544555664 28.00840759277344 C 29.8122386932373 28.00840759277344 33.0494499206543 30.15481948852539 34.70323944091797 33.26887130737305 C 31.60677719116211 36.92832946777344 26.97968101501465 39.26826477050781 21.81597900390625 39.26826477050781 Z">
@@ -842,7 +871,7 @@
 			</div>
 		</div>
 		<div id="Request_">
-			<span>Administrator Requests</span>
+			<span>Event Lists</span>
 		</div>
 	</div>
 	<div id="Group_73">
@@ -895,7 +924,7 @@
 	</div>
 	
 	<div id="Admin_Request_Panel">
-		<span>Administrator Request Panel</span>
+		<span>Event Registration</span>
 	</div>
 	
 	<div class="gotomanage">
@@ -905,9 +934,9 @@
 			</rect>
 		</svg>
 		<div id="goto-manage-events">
-			<a href = "/webapp/administrator_events">
-			<span>Manage Events</span>
-			</a>	
+			<a href = "/webapp/organizer_requests">
+			<span>Back</span>
+			</a>
 		</div>
 	</div>
 </div>
@@ -925,6 +954,7 @@
     <script type="text/javascript"
         src="{% static 'js/datatables.min.js' %}"></script>
    	<script type="text/javascript" src="{% static 'js/RequestAnim.js' %}"></script>
+
 
 	   <!-- MODAL SCRIPT -->
 	<script>
