@@ -11,14 +11,7 @@ class Notification(models.Model):
 	class Meta:
 		db_table = "notification"
 
-class Review(models.Model):
-	title = models.CharField(max_length=50)
-	content = models.CharField(max_length=255)
-	rating = models.FloatField(default = 0)
-	date_created = models.DateField(default = datetime.now)
 
-	class Meta:
-		db_table = "review"
 
 class User(models.Model):
 	first_name = models.CharField(max_length=50)
@@ -33,6 +26,16 @@ class User(models.Model):
 
 	class Meta:
 		db_table="user"
+
+class Review(models.Model):
+	title = models.CharField(max_length=50)
+	content = models.CharField(max_length=255)
+	rating = models.FloatField(default = 0)
+	date_created = models.DateField(default = datetime.now)
+	author = models.ForeignKey(User, null = False, default = 1, blank = False, on_delete = models.CASCADE)
+
+	class Meta:
+		db_table = "review"
 
 class Request(models.Model):
 	description = models.CharField(max_length=255)
@@ -63,7 +66,7 @@ class Event(models.Model):
 	isDeleted = models.BooleanField(default = False)
 	isFinished = models.BooleanField(default = False)
 	reviews = models.ManyToManyField(Review)
-	participants = models.ManyToManyField(User)
+	participants = models.ManyToManyField(User, related_name = "participants")
 
 	class Meta:
 		db_table = "event"

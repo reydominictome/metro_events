@@ -701,58 +701,31 @@
 				{% csrf_token %}
             <tbody>
               <tr>
-                <td><input type="number" required name="organizer" value = "{{ request.session.user.id }}" hidden></td>
+                <td><input type="number" required name="user_id" value = "{{ request.session.user.id }}" hidden></td>
               </tr>
 			  <tr>
-				  <td>Event Name:</td>
-				  <td><input type="text" required name="event_name" required></td>
+				  <td>Event ID:</td>
+				  <td><input type="text" required name="event_id" required readonly value="{{ event_id }}"></td>
 			  </tr>
 			  <tr>
-				  <td>Event Description:</td>
-				  <td><textarea id="Compose_Mail" required name="event_description"
+				<td>Title:</td>
+				<td><input type="text" required name="title" required></td>
+				</tr>
+			  <tr>
+				  <td>Content:</td>
+				  <td><textarea id="Compose_Mail" required name="content"
 					placeholder="Description"></textarea></td>
 			  </tr>
 			  <tr>
-				  <td>Event Type:</td>
-				  <td><select id="gender" name="event_type" class="a" name="gender">
-					<option value = "Sports">Sports</option>
-					<option value = "Recreation">Recreation</option>
-					<option value = "Fun Run">Fun Run</option>
-					<option value = "Live Concert">Live Concert</option>
-					<option value = "Dance">Dance</option>
-					<option value = "Theatre">Theatre</option>
-				</select></td>
-			  </tr>
-			  <tr>
-				  <td>Event Fee:</td>
-				  <td><input id="email" type="number" step="0.01" min="0" 
-					pattern="[\d*]" max="200" class="form-control" 
-					name="event_fee" placeholder="0.00" required="required"></td>
-			  </tr>
-			  <tr>
-				<td>Start Date:</td>
-				<td><input id="username" type="date" class="form-control" 
-					name="start_date" placeholder="" required="required"></td>
-			  </tr>
-			  <tr>
-				<td>Start Time:</td>
-				<td><input id="password" type="time" class="form-control" 
-					name="start_time" placeholder="" required="required"></td>
-			  </tr>
-			  <tr>
-				<td>End Date:</td>
-				<td><input id="username" type="date" class="form-control" 
-					name="end_date" placeholder="" required="required"></td>
-			  </tr>
-			  <tr>
-				<td>End Time:</td>
-				<td><input id="password" type="time" class="form-control" 
-					name="end_time" placeholder="" required="required"></td>
+				  <td>Rating:</td>
+				  <td><input id="email" type="number" step="1" min="1" 
+					pattern="[\d*]" max="5" class="form-control" 
+					name="rating" placeholder="1" required="required"></td>
 			  </tr>
 			  <tr>
 				<td></td>
-				<td><button id="btnRegister" name="btnCreate" type="submit" 
-					class="btn btn-success btn-lg btn-block">Create Event</button></td>
+				<td><button id="btnRegister" name="btnCreateReview" type="submit" 
+					class="btn btn-success btn-lg btn-block">Create Review</button></td>
 			  </tr>
             </tbody>
 			</form>
@@ -872,7 +845,7 @@
 			</div>
 		</div>
 		<div id="Request_">
-			<span>Event Lists</span>
+			<span>Review</span>
 		</div>
 	</div>
 	<div id="Group_73">
