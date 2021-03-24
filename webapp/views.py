@@ -104,6 +104,16 @@ def newEventNotification(event_id):
     for u in user:
         u.notification.add(notif.id)
 
+def notifyOrganizer(event_id):
+    event = Event.objects.get(pk = event_id)
+
+    notif_title =  event.event_name
+    notif_content = "A new event has been created. If you are interested go and check it out."
+    notif_type = "New Event Announcement"
+
+    notif = Notification(notif_title = notif_title, notif_content = notif_content, notif_type = notif_type)
+    notif.save()
+
 
 class MetroEventsIndexView(View):
     def get(self, request):
@@ -178,12 +188,14 @@ class MetroEventsIndexView(View):
                         isOrganizer = 0
 
                         for a in admin:
-                            if u.id == a.admin:
+                            if u.id == a.admin.id:
                                 isAdmin = 1
+                                break
                         
                         for o in organizer:
                             if u.id == o.organizer:
                                 isOrganizer = 1
+                                break
 
                         context = {
                             'id': u.id,
@@ -196,9 +208,12 @@ class MetroEventsIndexView(View):
                             'isOrganizer': isOrganizer,
                         }
 
+                        print(isAdmin)
+
                         request.session['user'] = context
                         return redirect('webapp:home')
                         
+                print("cannot find btnLogin")
                 messages.error(request,'username or password is incorrect')
                 return redirect('webapp:landing')
                 
@@ -209,7 +224,7 @@ class MetroEventsIndexView(View):
 class MetroEventsHomeView(View):
     def get(self, request):
         if request.session.has_key('user'):
-            user_id = value = int(request.session['user']['id'])
+            user_id = int(request.session['user']['id'])
             user = User.objects.get(pk = user_id)
 
             notifs = user.notification.all()
@@ -274,19 +289,34 @@ class MetroEventsEventsView(View):
         if request.session.has_key('user'):
             events = Event.objects.all()
 
-            #for e in events:
-            #    print(e.event_organizer.organizer.username)
+            return render(request, 'webapp/EventList.html', {"events":events})
 
-
-            return render(request, 'webapp/event.html', {'events': events})
-        return redirect('webapp/landing')
-
+        return redirect('webapp:landing')
     def post(self, request):
         if request.session.has_key('user'):
             if request.method == 'POST':
-                if 'btnDelete' in request.POST:
-                    form = EventCreationForm(request.POST)
-        return redirect('webapp/landing')
+                if 'btnJoin' in request.POST:
+                    data = request.POST
+                    user_id = data.get("user_id")
+                    event_id = data.get("event_id")
+
+                    event = Event.objects.get(pk = event_id)
+                    user = Event.objects.get(pk = user_id)
+                    organizer = event.event_organizer
+
+                    description = "I want to join your event" + event.event_name
+                    request_type = "Request to join event"
+                    sender = user
+                    
+                    req = EventRequest.objects.create()
+                    req.save()
+                    update = EventRequest.objects.filter(id = req.id).update(description=description, 
+                                                                    request_type = request_type, sender = sender,
+                                                                    event = event)
+                    organizer.request.add(req)
+
+                    return redirect('webapp:events')
+        return redirect('webapp:landing')
 
 class MetroEventsEventsRegistrationView(View):
     def get(self, request):
@@ -324,7 +354,8 @@ class MetroEventsEventsRegistrationView(View):
                                     start_time = start_time,
                                     end_time = end_time)
                         form.save()
-                        event_update = Event.objects.filter(id = form.id).update(event_organizer=event_organizer)
+                        events = Event.objects.get(pk = form.id)
+                        event_organizer.events.add(events)
 
                         event_id = Event.objects.get(pk = form.id).pk
 
@@ -337,10 +368,8 @@ class MetroEventsAdministratorView(View):
     def get(self, request):
         if request.session.has_key('user'):
             requests = Request.objects.all()
-            events = Event.objects.all()
-            users = User.objects.all()
 
-            return render(request, 'webapp/movie_dashboard.html', {"users":users, "requests":requests, "events":events})
+            return render(request, 'webapp/Request.html', {"requests":requests})
 
         return redirect('webapp:landing')
 
@@ -379,9 +408,59 @@ class MetroEventsAdministratorView(View):
                 elif 'btnDecline' in request.POST:
                     request_id = request.POST.get("request_id")
 
+                    request = Request.objects.get(pk = request_id)
                     update = Request.objects.filter(id = request_id).update(isPending=False)
 
-                    requestNotification(request_id)
+                    if request.request_type == 'request_to_be_an_administrator':
+                        req_type = "administrator"
+                    elif request.request_type == 'request_to_be_an_organizer':
+                        req_type = "organizer"
+
+                    requestNotification(request_id, req_type)
+
+                    return redirect('webapp:administrator')
+                return redirect('webapp:landing')
+            return redirect('webapp:landing')
+        return redirect('webapp:landing')
+    
+class MetroEventsAdministratorUsersView(View):
+    def get(self, request):
+        if request.session.has_key('user'):
+            users = User.objects.all()
+
+            return render(request, 'webapp/AllUsers.html', {"user":users})
+
+        return redirect('webapp:landing')
+
+    def post(self, request):
+        if request.session.has_key('user'):
+            if request.method == 'POST':
+                if 'btnDelete' in request.POST:
+                    request_id = request.POST.get("request_id")
+
+                    update = Request.objects.filter(id = request_id).update(isDeleted=True)
+
+                    return redirect('webapp:administrator')
+                return redirect('webapp:landing')
+            return redirect('webapp:landing')
+        return redirect('webapp:landing')
+    
+class MetroEventsAdministratorEventsView(View):
+    def get(self, request):
+        if request.session.has_key('user'):
+            events = Event.objects.all()
+
+            return render(request, 'webapp/AllEvents.html', {"events":events})
+
+        return redirect('webapp:landing')
+
+    def post(self, request):
+        if request.session.has_key('user'):
+            if request.method == 'POST':
+                if 'btnDelete' in request.POST:
+                    request_id = request.POST.get("request_id")
+
+                    update = Request.objects.filter(id = request_id).update(isDeleted=True)
 
                     return redirect('webapp:administrator')
                 return redirect('webapp:landing')
@@ -391,4 +470,63 @@ class MetroEventsAdministratorView(View):
 
 class MetroEventsOrganizerView(View):
     def get(self, request):
-        return render(request, 'webapp/Home.html')                
+        if request.session.has_key('user'):
+            events = Event.objects.all()
+            
+            return render(request, 'webapp/event.html', {'events': events})
+        return redirect('webapp/landing')
+
+    def post(self, request):
+        if request.session.has_key('user'):
+            if request.method == 'POST':
+                if 'btnDelete' in request.POST:
+                    form = EventCreationForm(request.POST)
+        return redirect('webapp/landing') 
+
+class MetroEventsOrganizerRequestsView(View):
+    def get(self, request):
+        if request.session.has_key('user'):
+            events = Event.objects.all()
+
+            return render(request, 'webapp/OrganizerEvents.html', {"events":events})
+
+        return redirect('webapp:landing')
+
+    def post(self, request):
+        if request.session.has_key('user'):
+            if request.method == 'POST':
+                if 'btnDelete' in request.POST:
+                    form = EventCreationForm(request.POST)
+        return redirect('webapp/landing')    
+
+class MetroEventsOrganizerNotificationsView(View):
+    def get(self, request):
+        if request.session.has_key('user'):
+            user_id = int(request.session['user']['id'])
+            user = User.objects.get(pk = user_id)
+
+            notifs = user.notification.all()
+            notifs_titles = []
+            notifs_dates = []
+            notifs_contents = []
+            notifs_types = []
+
+            for n in notifs:
+                notifs_titles.append(n.notif_title)
+                notifs_dates.append(n.notif_date)
+                notifs_contents.append(n.notif_content)
+                notifs_types.append(n.notif_type)
+
+            return render(request, 'webapp/Home.html', {"notifs_titles":notifs_titles,
+                                                        "notifs_dates":notifs_dates, 
+                                                        "notifs_contents":notifs_contents,
+                                                        "notifs_types": notifs_types})
+
+        return redirect('webapp:landing')
+
+    def post(self, request):
+        if request.session.has_key('user'):
+            if request.method == 'POST':
+                if 'btnDelete' in request.POST:
+                    form = EventCreationForm(request.POST)
+        return redirect('webapp/landing')           
