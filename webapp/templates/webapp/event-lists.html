@@ -127,7 +127,6 @@
               </thead>
             <tbody>
               {% for e in events %}
-              {% if e.event_organizer.organizer.id == request.session.user.id %}
               {% if e.isDeleted == 0 %}
               <tr>
                 <td>{{ e.start_date | date:"F d, Y" }}</td>
@@ -152,7 +151,6 @@
                 </td>
               </tr>
               {% endif %}
-              {% endif %}
               {% endfor %}
             </tbody>
           </table>
@@ -162,7 +160,6 @@
 
     <!-- The Modal -->
     {% for e in events %}
-    {% if e.event_organizer.organizer.id == request.session.user.id %}
     {% if e.isDeleted == 0 %}
     <div id="view{{ e.id }}" class="modal">
 
@@ -220,7 +217,6 @@
       </form> 
       </div>
     </div>
-    {% endif %}
     {% endif %}
     {% endfor %}
 

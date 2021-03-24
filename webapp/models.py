@@ -47,15 +47,7 @@ class Request(models.Model):
 	class Meta:
 		db_table = "request"
 
-class Organizer(models.Model):
-	organizer = models.ForeignKey(User, default = 1, null = False, blank = False, on_delete = models.CASCADE)
-	request = models.ManyToManyField(Request)
-
-	class Meta:
-		db_table="organizer"
-
 class Event(models.Model):
-	event_organizer = models.ForeignKey(Organizer, null = False, default = 1, blank = False, on_delete = models.CASCADE)
 	event_name = models.CharField(max_length=50)
 	event_description = models.CharField(max_length=50)
 	event_type = models.CharField(max_length=50)
@@ -75,6 +67,28 @@ class Event(models.Model):
 
 	class Meta:
 		db_table = "event"
+
+class EventRequest(models.Model):
+	description = models.CharField(max_length=255)
+	date_sent = models.DateField(default = datetime.now)
+	time_sent = models.TimeField(default = timezone.now)
+	request_type = models.CharField(max_length=50)
+	isPending = models.BooleanField(default = True)
+	isConfirmed = models.BooleanField(default = False)
+	isDeleted = models.BooleanField(default = False)
+	sender = models.ForeignKey(User, null = False, default = 1, blank = False, on_delete = models.CASCADE)
+	event = models.ForeignKey(Event, null = False, default = 1, blank = False, on_delete = models.CASCADE)
+
+	class Meta:
+		db_table = "event_request"
+
+class Organizer(models.Model):
+	organizer = models.ForeignKey(User, default = 1, null = False, blank = False, on_delete = models.CASCADE)
+	request = models.ManyToManyField(EventRequest)
+	events = models.ManyToManyField(Event)
+
+	class Meta:
+		db_table="organizer"
 
 class Administrator(models.Model):
 	admin = models.ForeignKey(User, default = 1, null = False, blank = False, on_delete = models.CASCADE)
