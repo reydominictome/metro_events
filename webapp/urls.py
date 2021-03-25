@@ -16,5 +16,4 @@ urlpatterns = [
     path('organizer', views.MetroEventsOrganizerView.as_view(), name='organizer'),
     path('organizer_requests', views.MetroEventsOrganizerRequestsView.as_view(), name='organizer_requests'),
     path('notifications', views.MetroEventsNotificationsView.as_view(), name='notifications'),
-    path('users', views.MetroEventsUsersView.as_view(), name='users'),
 ]

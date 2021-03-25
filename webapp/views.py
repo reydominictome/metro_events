@@ -352,43 +352,6 @@ class MetroEventsEventsView(View):
                     update.save()
 
                     return redirect('webapp:events')
-                elif 'btnReview' in request.POST:
-                    data = request.POST
-                    event_id = data.get("event_id")
-                    return render(request, 'webapp/ReviewEvent.html', {"event_id":event_id})
-                elif 'btnCreateReview' in request.POST:
-                    form = ReviewCreationForm(request.POST)
-                    data = request.POST
-
-                    if form.is_valid():
-                        title = data.get("title")
-                        content = data.get("content")
-                        rating = data.get("rating")
-                        event_id = data.get("event_id")
-                        user_id = data.get("user_id")
-
-                        user = User.objects.get(pk = user_id)
-                        event = Event.objects.get(pk = event_id)
-
-                        form = Review(title = title, content = content, rating = rating)
-                        form.save()
-                        update = Review.objects.filter(pk = form.id).update(author = user)
-
-                        event.reviews.add(form)
-
-                        return redirect('webapp:events')
-                    return redirect('webapp:home')
-                elif 'btnReviews' in request.POST:
-                    data = request.POST
-                    event_id = data.get("event_id")
-                    event = Event.objects.get(pk = event_id)
-                    return render(request, 'webapp/ReviewList.html', {"event":event})
-                elif 'btnParticipants' in request.POST:
-                    data = request.POST
-                    event_id = data.get("event_id")
-                    event = Event.objects.get(pk = event_id)
-                    return render(request, 'webapp/ParticipantsList.html', {"event":event})
-                    
         return redirect('webapp:landing')
 
 class MetroEventsEventsRegistrationView(View):
@@ -560,16 +523,8 @@ class MetroEventsOrganizerView(View):
     def post(self, request):
         if request.session.has_key('user'):
             if request.method == 'POST':
-                if 'btnReviews' in request.POST:
-                    data = request.POST
-                    event_id = data.get("event_id")
-                    event = Event.objects.get(pk = event_id)
-                    return render(request, 'webapp/ReviewList.html', {"event":event})
-                elif 'btnParticipants' in request.POST:
-                    data = request.POST
-                    event_id = data.get("event_id")
-                    event = Event.objects.get(pk = event_id)
-                    return render(request, 'webapp/ParticipantsList.html', {"event":event})
+                if 'btnDelete' in request.POST:
+                    form = EventCreationForm(request.POST)
         return redirect('webapp/landing') 
 
 class MetroEventsOrganizerRequestsView(View):
@@ -638,21 +593,4 @@ class MetroEventsNotificationsView(View):
             if request.method == 'POST':
                 if 'btnDelete' in request.POST:
                     form = EventCreationForm(request.POST)
-        return redirect('webapp/landing')  
-
-class MetroEventsUsersView(View):
-    def get(self, request):
-        if request.session.has_key('user'):
-            user_id = int(request.session['user']['id'])
-            user = User.objects.get(pk = user_id)
-
-            return render(request, 'webapp/UserEvents.html', {"user": user})
-
-        return redirect('webapp:landing')
-
-    def post(self, request):
-        if request.session.has_key('user'):
-            if request.method == 'POST':
-                if 'btnDelete' in request.POST:
-                    form = EventCreationForm(request.POST)
-        return redirect('webapp/landing') 
+        return redirect('webapp/landing')           
